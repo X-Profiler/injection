@@ -1,2 +1,2 @@
-import { AA, BB, CC, DD } from "./injectable";
-export const Injectable = { AA, BB, CC, DD };
+import { AA, BB, CC, DD, EE } from "./injectable";
+export const Injectable = { AA, BB, CC, DD, EE };

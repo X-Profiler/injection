@@ -11,3 +11,5 @@ export class CC { }
 
 @Injectable({ scope: Scope.EXECUTION })
 export class DD { }
+
+export class EE { }

@@ -29,4 +29,10 @@ describe("injectable.test.js", () => {
     assert(metadata.id === Injectable.DD);
     assert(metadata.scope === Scope.EXECUTION);
   });
+
+  it("class EE not have metadata", () => {
+    const metadata = getClassMetadata(Injectable.EE);
+    const hasMetadata = !!metadata;
+    assert(!hasMetadata);
+  });
 });
