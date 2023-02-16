@@ -1,4 +1,10 @@
-// decorator
-export * from './decorator/index';
+import "reflect-metadata";
 
-export * from './container';
+// types
+export * from "./type";
+
+// decorator
+export * from "./decorator/index";
+
+export * from "./constant";
+export * from "./container";

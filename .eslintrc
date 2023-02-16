@@ -16,6 +16,10 @@
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }
+    ],
+    "quotes": [
+      2,
+      "double"
     ]
   },
   "overrides": [
