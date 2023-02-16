@@ -1,13 +1,44 @@
 {
-  "extends": "@artus/tsconfig",
   "compilerOptions": {
-    "outDir": "./lib",
+    // "rootDir": "src",
+    // Language and Environment
+    "target": "ES2017",
+    "lib": [
+      "ESNext"
+    ],
+    "experimentalDecorators": true,
+    // Modules
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    // JavaScript support
+    "allowJs": false,
+    // Emit
+    "declaration": true,
+    "downlevelIteration": true,
+    "importHelpers": true,
+    "newLine": "LF",
+    "stripInternal": true,
+    "sourceMap": false,
+    // Completeness
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    // Interop Constraints
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    // Type Checking
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "./dist",
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "types": [
       "node",
-      "jest",
       "reflect-metadata"
     ],
   },

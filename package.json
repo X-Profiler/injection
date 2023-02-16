@@ -4,7 +4,8 @@
   "description": "an ioc implemention for xprofiler",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npm run test"
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint --fix . --ext .ts"
   },
   "repository": {
     "type": "git",
@@ -20,7 +21,12 @@
   },
   "homepage": "https://github.com/X-Profiler/injection#readme",
   "devDependencies": {
-    "@artus/tsconfig": "^1.0.1",
+    "@artus/eslint-config-artus": "^0.0.1",
+    "@types/node": "^18.13.0",
+    "eslint": "^8.34.0",
+    "eslint-plugin-import": "^2.27.5",
+    "reflect-metadata": "^0.1.13",
+    "tslib": "^2.5.0",
     "typescript": "^4.9.5"
   }
 }
