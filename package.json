@@ -6,10 +6,12 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
-    "test": "vitest run",
+    "build": "rm -rf dist && tsc",
+    "build:test": "rm -rf dist-test && tsc -p ./tsconfig.test.json",
+    "test": "npm run build:test && vitest run",
     "cov": "vitest run --coverage",
     "codecov": "codecov || echo 'warning: ignoring codecov failure'",
-    "ci": "npm run cov && npm run codecov"
+    "ci": "npm run lint && npm run cov && npm run codecov"
   },
   "repository": {
     "type": "git",

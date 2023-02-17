@@ -1,3 +1,5 @@
 node_modules
-lib
+dist
+dist-test
 coverage
+vitest.config.ts

@@ -1,9 +1,12 @@
-import { CLASS_METADATA_KEY, Scope } from "../constant";
-import { InjectableOptions } from "../type";
+import {
+  CLASS_CONSTRUCTOR_METADATA_KEY,
+  InjectableOptions,
+  Scope,
+} from "../";
 
 export function Injectable(options?: Partial<InjectableOptions>) {
   return (target: any) => {
-    const medataValue = { id: target, scope: Scope.SINGLETON, ...options };
-    Reflect.defineMetadata(CLASS_METADATA_KEY, medataValue, target);
+    const medata = { id: target, scope: Scope.SINGLETON, ...options };
+    Reflect.defineMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, medata, target);
   };
 }

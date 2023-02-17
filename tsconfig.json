@@ -36,13 +36,14 @@
     "outDir": "./dist",
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "types": [
       "node",
       "reflect-metadata"
     ],
   },
   "exclude": [
-    "lib"
+    "dist*",
+    "vitest*"
   ],
 }
