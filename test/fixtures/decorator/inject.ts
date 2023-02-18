@@ -6,7 +6,14 @@ export class AA {
   @Inject()
   private config: Config;
 
+  @Inject()
+  private uninitiazed;
+
   getConfig(@Inject() config: Config) {
     return this.config || config;
+  }
+
+  foo() {
+    return this.uninitiazed;
   }
 }
