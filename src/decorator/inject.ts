@@ -1,15 +1,15 @@
-import { is, getMetadataType } from "../lib/utils";
+import { is, getMetadataType, createXpfError } from "../lib/utils";
 import {
-  CLASS_PROPS_KEY, CLASS_PROP_METATA_PREFIX,
   ClasMemberMetadataT, IdentifierT,
   InjectOptions,
+  CLASS_PROPS_KEY, CLASS_PROP_METATA_PREFIX, PropType, ErrorType,
 } from "../";
 
 export function Inject(options?: IdentifierT | InjectOptions) {
   return (target: any, prop: string, index?: number) => {
     const clazz = is.function(target) ? target : target.constructor;
     if (is.static(clazz, prop)) {
-      throw new Error("should not inject static props!");
+      throw createXpfError(ErrorType.INJECT_FAILED_WITH_STATIC_PROP);
     }
 
     // format options
@@ -17,7 +17,9 @@ export function Inject(options?: IdentifierT | InjectOptions) {
 
     // get id
     const id: IdentifierT = !options ? getMetadataType(clazz.prototype, prop, index) : options.id;
-    console.log(12333, prop, id);
+    if (!options && !is.class(id)) {
+      throw createXpfError(ErrorType.INJECT_FAILED_WITH_UNINITIALIZED_TYPE);
+    }
 
     // set props
     const props = Reflect.getMetadata(CLASS_PROPS_KEY, clazz);
@@ -30,9 +32,9 @@ export function Inject(options?: IdentifierT | InjectOptions) {
     // set prop metadata
     let metadata: ClasMemberMetadataT;
     if (is.number(index)) {
-      metadata = { id, index: index as number };
+      metadata = { id, type: PropType.FUNCTION, index: index as number };
     } else {
-      metadata = { id, lazy: false, ...options };
+      metadata = { id, type: PropType.PROPERTY, lazy: false, ...options };
     }
     Reflect.defineMetadata(`${CLASS_PROP_METATA_PREFIX}${prop}`, metadata, clazz);
   };

@@ -16,6 +16,10 @@ function isSymbol(sym: any) {
   return typeof sym === "symbol";
 }
 
+function isClass(clazz: any) {
+  return isFunction(clazz) && Function.prototype.toString.call(clazz).includes("class ");
+}
+
 function isStatic(clazz: ConstructableT, key: string) {
   return Reflect.ownKeys(clazz).includes(key);
 }
@@ -29,6 +33,7 @@ export const is = {
   string: isString,
   function: isFunction,
   symbol: isSymbol,
+  class: isClass,
   static: isStatic,
   identifier: isIdentifier,
 };
@@ -38,3 +43,5 @@ export function getMetadataType(prototype: object, prop: string, index?: number)
     Reflect.getMetadata("design:paramtypes", prototype, prop)[index as number] :
     Reflect.getMetadata("design:type", prototype, prop);
 }
+
+export * from "./error";

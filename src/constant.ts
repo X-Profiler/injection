@@ -8,3 +8,20 @@ export const Scope = {
   EXECUTION: "XPROFILER::EXECUTION",
   TRANSIENT: "XPROFILER::TRANSIENT",
 } as const;
+
+export const PropType = {
+  PROPERTY: "XPROFILER::PROPERTY",
+  FUNCTION: "XPROFILER::FUNCTION",
+} as const;
+
+export const ErrorType = {
+  EMPTY_INITIALIZED: "XPROFILER::EMPTY_INITIALIZED",
+  INJECT_FAILED_WITH_STATIC_PROP: "XPROFILER::INJECT_FAILED_WITH_STATIC_PROP",
+  INJECT_FAILED_WITH_UNINITIALIZED_TYPE: "XPROFILER::INJECT_FAILED_WITH_UNINITIALIZED_TYPE",
+} as const;
+
+export const ErrorMessage = {
+  [ErrorType.EMPTY_INITIALIZED]: "empty initialized",
+  [ErrorType.INJECT_FAILED_WITH_STATIC_PROP]: "should not inject static props!",
+  [ErrorType.INJECT_FAILED_WITH_UNINITIALIZED_TYPE]: "should inject with reflect type or id!",
+} as const;
