@@ -1,6 +1,6 @@
 {
   "name": "@xprofiler/injection",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "an ioc implemention for xprofiler",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
