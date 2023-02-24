@@ -26,7 +26,7 @@ describe("injectable.test.js", () => {
   it("class DD metadata shoule be ok", () => {
     const metadata = getClassConstructorMetadata(Injectable.DD);
     assert(metadata.id === Injectable.DD);
-    assert(metadata.scope === ScopeType.EXECUTION);
+    assert(metadata.scope === ScopeType.TRANSIENT);
   });
 
   it("class EE not have metadata", () => {
