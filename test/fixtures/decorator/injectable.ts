@@ -1,4 +1,4 @@
-import { Injectable, Scope } from "../../../src";
+import { Injectable, ScopeType } from "../../../src";
 
 @Injectable()
 export class AA { }
@@ -9,7 +9,7 @@ export class BB { }
 @Injectable({ id: "cc" })
 export class CC { }
 
-@Injectable({ scope: Scope.EXECUTION })
+@Injectable({ scope: ScopeType.EXECUTION })
 export class DD { }
 
 export class EE { }

@@ -1,41 +1,53 @@
-import { is, getMetadataType, createXpfError } from "../lib/utils";
+import { is, getMetadataType, createCustomError, toString } from "../lib/utils";
 import {
-  ClasMemberMetadataT, IdentifierT,
+  IdentifierT, RecordClassMemberMetadataT,
   InjectOptions,
-  CLASS_PROPS_KEY, CLASS_PROP_METATA_PREFIX, PropType, ErrorType,
+  CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType, ErrorType, CLASS_CONSTRUCTOR_TAG,
 } from "../";
 
 export function Inject(options?: IdentifierT | InjectOptions) {
-  return (target: any, prop: string, index?: number) => {
+  return (target: any, prop: string | undefined, index?: number) => {
     const clazz = is.function(target) ? target : target.constructor;
-    if (is.static(clazz, prop)) {
-      throw createXpfError(ErrorType.INJECT_FAILED_WITH_STATIC_PROP);
+    prop = (is.undefined(prop) ? CLASS_CONSTRUCTOR_TAG : prop) as string;
+
+    // check static
+    if (is.includes(clazz, prop)) {
+      throw createCustomError(ErrorType.INJECT_FAILED_WITH_STATIC_PROP);
     }
 
     // format options
     options = is.identifier(options) ? { id: options as IdentifierT } : options as InjectOptions;
 
-    // get id
-    const id: IdentifierT = !options ? getMetadataType(clazz.prototype, prop, index) : options.id;
-    if (!options && !is.class(id)) {
-      throw createXpfError(ErrorType.INJECT_FAILED_WITH_UNINITIALIZED_TYPE);
+    // get & check id
+    const id: IdentifierT = is.includes(options, "id") ? options.id : getMetadataType(clazz, prop, index);
+    if (is.includes(options, "id") && !is.identifier(options.id)) {
+      throw createCustomError(ErrorType.INJECT_FAILED_WITH_ILLEGAL_IDENTIFIER);
+    }
+    if (!is.includes(options, "id") && !is.class(id)) {
+      throw createCustomError(ErrorType.INJECT_FAILED_WITH_UNINITIALIZED_TYPE, str => `[${toString(clazz)}::${prop} => ${toString(id)}] ${str}`);
     }
 
     // set props
     const props = Reflect.getMetadata(CLASS_PROPS_KEY, clazz);
     if (Array.isArray(props)) {
-      props.push(prop);
+      !props.includes(prop) && props.push(prop);
     } else {
       Reflect.defineMetadata(CLASS_PROPS_KEY, [prop], clazz);
     }
 
     // set prop metadata
-    let metadata: ClasMemberMetadataT;
+    const key = `${CLASS_PROP_METADATA_PREFIX}${prop}`;
+    const metadata: RecordClassMemberMetadataT = { type: PropType.PROPERTY, list: [] };
     if (is.number(index)) {
-      metadata = { id, type: PropType.FUNCTION, index: index as number };
+      metadata.type = PropType.FUNCTION;
+      metadata.list.push({ id, index: index as number });
+      // add origin
+      const origin = Reflect.getMetadata(key, clazz);
+      Array.isArray(origin?.list) && metadata.list.push(...origin.list);
     } else {
-      metadata = { id, type: PropType.PROPERTY, lazy: false, ...options };
+      metadata.list.push({ id, lazy: false, ...options });
     }
-    Reflect.defineMetadata(`${CLASS_PROP_METATA_PREFIX}${prop}`, metadata, clazz);
+
+    Reflect.defineMetadata(key, metadata, clazz);
   };
 }

@@ -1,15 +1,15 @@
 import { ErrorCodeT, ErrorMessage, ErrorType } from "../";
 
-class XpfError extends Error {
+class CustomError extends Error {
   public code: ErrorCodeT;
 
-  constructor(code: ErrorCodeT) {
-    super(ErrorMessage[code]);
+  constructor(code: ErrorCodeT, format: (str: string) => string) {
+    super(format(ErrorMessage[code]));
     this.code = code;
   }
 }
 
-export function createXpfError(code: ErrorCodeT = ErrorType.EMPTY_INITIALIZED) {
-  const error = new XpfError(code);
+export function createCustomError(code: ErrorCodeT = ErrorType.EMPTY_INITIALIZED, format = (str: string) => str) {
+  const error = new CustomError(code, format);
   return error;
 }

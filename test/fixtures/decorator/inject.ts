@@ -18,7 +18,16 @@ export class AA {
   @Inject({ id: "config" })
   private config5: Config;
 
+  private config6: Config;
+
+  private config7: Config;
+
+  constructor(@Inject() config: Config, @Inject("config7") config7: Config) {
+    this.config6 = config;
+    this.config7 = config7;
+  }
+
   getConfig(@Inject() config: Config) {
-    return this.config1 || this.config2 || this.config3 || this.config4 || this.config5 || config;
+    return this.config1 || this.config2 || this.config3 || this.config4 || this.config5 || this.config6 || this.config7 || config;
   }
 }
