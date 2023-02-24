@@ -2,14 +2,28 @@ import {
   ContainerSetOptions,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
   IdentifierT, IdeintifiedT, ErrorType, ScopeType, ConstructableT, ClassConstructorMetadataT, RecordClassMemberMetadataT,
-  ClassFunctionArgMetadataT, ClassPropMetadataT,
+  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG,
 } from ".";
 
 import { createCustomError, is, toString } from "./lib/utils";
 
 export class Container {
+  public children: Container[];
+  public parent: Container | undefined;
+
+  private tag: string;
   private registry = new Map<IdentifierT, IdeintifiedT>();
   private collection = new Map<IdentifierT, InstanceType<ConstructableT>>;
+
+  constructor(parent?: Container, tag: string = DEFAULT_CONTAINER_TAG) {
+    this.tag = tag;
+    this.parent = parent;
+    this.parent?.children.push(this);
+  }
+
+  get name() {
+    return this.tag;
+  }
 
   public set(options: ConstructableT | ContainerSetOptions) {
     options = is.class(options) ? { value: options } : options as ContainerSetOptions;
