@@ -9,7 +9,7 @@ export class BB { }
 @Injectable({ id: "cc" })
 export class CC { }
 
-@Injectable({ scope: ScopeType.EXECUTION })
+@Injectable({ scope: ScopeType.TRANSIENT })
 export class DD { }
 
 export class EE { }
