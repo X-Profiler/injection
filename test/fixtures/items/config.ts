@@ -1,4 +1,4 @@
-import { Injectable } from "../../../src";
+import { Injectable, ScopeType } from "../../../src";
 
 @Injectable()
 export class Config {
@@ -43,3 +43,6 @@ export class Config2 {
     return this.#key;
   }
 }
+
+@Injectable({ scope: ScopeType.TRANSIENT })
+export class TransientConfig { }

@@ -8,7 +8,6 @@ export const CLASS_CONSTRUCTOR_TAG = `${PREFIX}::CLASS_CONSTRUCTOR_TAG`;
 
 export const ScopeType = {
   SINGLETON: `${PREFIX}::SINGLETON`,
-  EXECUTION: `${PREFIX}::EXECUTION`,
   TRANSIENT: `${PREFIX}::TRANSIENT`,
 } as const;
 

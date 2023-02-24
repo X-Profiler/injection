@@ -1,7 +1,7 @@
 import { strict as assert } from "assert";
 import { Container, createCustomError, ErrorType } from "../src";
 import { UnInjectable, Foo, Bar } from "./fixtures/items/container";
-import { Config, Config2 } from "./fixtures/items/config";
+import { Config, Config2, TransientConfig } from "./fixtures/items/config";
 
 
 describe("container.test.js", () => {
@@ -86,6 +86,22 @@ describe("container.test.js", () => {
       }
       assert(error.code === ErrorType.INJECT_FAILED_WITH_UNINITIALIZED_TYPE);
       assert(error.message.includes("class BB::aa => class Object"));
+    });
+  });
+
+  describe("instance scope", () => {
+    const container = new Container();
+    container.set(Config);
+    container.set(TransientConfig);
+
+    it("single scope should be ok", () => {
+      const config = container.get(Config);
+      assert(container.get(Config) === config);
+    });
+
+    it("transient scope should be ok", () => {
+      const config = container.get(TransientConfig);
+      assert(container.get(TransientConfig) !== config);
     });
   });
 });
