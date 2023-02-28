@@ -1,4 +1,8 @@
-import { CLASS_CONSTRUCTOR_TAG, ConstructableT, IdentifierT } from "../";
+import { CLASS_CONSTRUCTOR_TAG, ConstructableT } from "../";
+
+function isBoolean(bool: any) {
+  return typeof bool === "boolean";
+}
 
 function isObject(obj: any) {
   return obj !== null && typeof obj === "object";
@@ -24,6 +28,10 @@ function isUndefined(undef: any) {
   return typeof undef === "undefined";
 }
 
+function isNull(nul: any) {
+  return nul === null;
+}
+
 function isClass(clazz: any) {
   return isFunction(clazz) && Function.prototype.toString.call(clazz).includes("class ");
 }
@@ -41,12 +49,14 @@ function includes(object: any, key: string) {
 }
 
 export const is = {
+  boolean: isBoolean,
   object: isObject,
   number: isNumber,
   string: isString,
   function: isFunction,
   symbol: isSymbol,
   undefined: isUndefined,
+  null: isNull,
   class: isClass,
   identifier: isIdentifier,
   constructor: isConstructor,
@@ -61,14 +71,30 @@ export function getMetadataType(clazz: ConstructableT, prop: string, index?: num
       Reflect.getMetadata("design:type", clazz.prototype, prop);
 }
 
-export function toString(val: IdentifierT): string {
+export function toString(val: any): string {
+  if (isUndefined(val)) {
+    return "undefined";
+  }
+
+  if (isNull(val)) {
+    return "null";
+  }
+
+  if (isBoolean(val) || isObject(val)) {
+    return val.toString();
+  }
+
   if (isString(val)) {
     return val as string;
-  } else if (isSymbol(val)) {
-    return (val as symbol).toString();
-  } else {
-    return `class ${(val as ConstructableT).name}`;
   }
+
+  if (isSymbol(val)) {
+    return (val as symbol).toString();
+  }
+
+  return `class ${(val as ConstructableT).name}`;
 }
 
 export * from "./error";
+
+export * from "./stack";

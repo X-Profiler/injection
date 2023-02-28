@@ -22,7 +22,11 @@ export interface InjectOptions extends InjectBaseOptions {
   lazy?: boolean,
 }
 
-export interface ClassConstructorMetadataT extends Required<Pick<InjectableOptions, "id" | "scope">> { }
+export interface ClassConstructorMetadataT extends Required<Pick<InjectableOptions, "id" | "scope">> {
+  path: string,
+  container?: string,
+  module?: string,
+}
 
 export interface ClassPropMetadataT extends Required<Pick<InjectOptions, "id" | "lazy">> { }
 
@@ -42,4 +46,12 @@ export interface ContainerSetOptions {
 export interface RecordClassMemberMetadataT {
   type: (typeof PropType)[keyof (typeof PropType)],
   list: ClassMemberMetadataT[],
+}
+
+export interface ModuleMetadataT {
+  path: string,
+}
+
+export interface ModuleConstructableT extends ConstructableT {
+  parent?: ModuleConstructableT,
 }

@@ -1,5 +1,9 @@
 import { strict as assert } from "assert";
-import { ClassFunctionArgMetadataT, ClassPropMetadataT, ErrorType, PropType, createCustomError, CLASS_CONSTRUCTOR_TAG } from "../../src";
+import {
+  ClassFunctionArgMetadataT, ClassPropMetadataT,
+  ErrorType, PropType, CLASS_CONSTRUCTOR_TAG,
+} from "../../src";
+import { createCustomError } from "../../src/lib/utils";
 import { Inject } from "../fixtures/decorator";
 import { Config } from "../fixtures/items/config";
 import { getClassProps, getClassMemberMetadata } from "../fixtures/utils";

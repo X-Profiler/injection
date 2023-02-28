@@ -20,7 +20,7 @@ describe("injectable.test.js", () => {
   it("class CC metadata shoule be ok", () => {
     const metadata = getClassConstructorMetadata(Injectable.CC);
     assert(metadata.id === "cc");
-    assert(metadata.scope === ScopeType.SINGLETON);
+    assert(metadata.scope === ScopeType.EXECUTION);
   });
 
   it("class DD metadata shoule be ok", () => {
