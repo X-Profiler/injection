@@ -2,11 +2,12 @@ import {
   ContainerSetOptions,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
   IdentifierT, IdeintifiedT, ErrorType, ScopeType, ConstructableT, ClassConstructorMetadataT, RecordClassMemberMetadataT,
-  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, MODULE_METADATA_KEY, ModuleMetadataT, ModuleConstructableT,
+  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, MODULE_METADATA_KEY, ModuleMetadataT, ModuleConstructableT, Injectable,
 } from ".";
 
 import { createCustomError, is, toString } from "./lib/utils";
 
+@Injectable()
 export class Container {
   static modules: ModuleConstructableT[] = [];
 
@@ -44,7 +45,8 @@ export class Container {
       if (!options.id) {
         throw createCustomError(ErrorType.CONTAINER_SET_FAILED_BY_BASIC_TYPE_WITHOUT_ID);
       }
-      this.registry.set(options.id, options.value);
+
+      this.duplicate(this.registry, options.id, options.value);
       return;
     }
 
@@ -71,7 +73,7 @@ export class Container {
     if (container.registry.has(metadata.id)) {
       return;
     }
-    container.registry.set(options.id || metadata.id, clazz);
+    this.duplicate(container.registry, options.id || metadata.id, options.value || clazz);
   }
 
   public get<T = unknown>(id: IdentifierT<T>): T {
@@ -218,5 +220,12 @@ export class Container {
     }
 
     this.set(id as ConstructableT);
+  }
+
+  private duplicate(registry: typeof this.registry, id: IdentifierT, value: IdeintifiedT) {
+    if (registry.has(id)) {
+      return;
+    }
+    registry.set(id, value);
   }
 }
