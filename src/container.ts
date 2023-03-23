@@ -1,10 +1,10 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import {
   ContainerSetOptions,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
   IdentifierT, IdeintifiedT, ErrorType, ScopeType, ConstructableT, ClassConstructorMetadataT, RecordClassMemberMetadataT,
   ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, MODULE_METADATA_KEY, ModuleMetadataT, ModuleConstructableT, Injectable,
 } from ".";
-
 import { createCustomError, is, toString } from "./lib/utils";
 
 @Injectable()
@@ -18,6 +18,7 @@ export class Container {
   private registry = new Map<IdentifierT, IdeintifiedT>();
   private collection = new Map<IdentifierT, InstanceType<ConstructableT>>;
   private relationship: Map<string, Container>;
+  private storage: AsyncLocalStorage<Map<IdentifierT, Exclude<IdeintifiedT, ConstructableT> | InstanceType<ConstructableT>>>;
 
   constructor(parent?: Container, tag: string = DEFAULT_CONTAINER_TAG, root = true) {
     this.tag = tag;
@@ -26,6 +27,7 @@ export class Container {
     if (root) {
       this.relationship = new Map<string, Container>();
       this.containers.set(DEFAULT_CONTAINER_TAG, this);
+      this.storage = new AsyncLocalStorage();
     }
   }
 
@@ -37,6 +39,10 @@ export class Container {
     return this.relationship ?? this.parent?.containers;
   }
 
+  get store(): typeof this.storage {
+    return this.storage ?? this.parent?.store;
+  }
+
   public set(options: ConstructableT | ContainerSetOptions) {
     options = is.class(options) ? { value: options } : options as ContainerSetOptions;
 
@@ -46,7 +52,7 @@ export class Container {
         throw createCustomError(ErrorType.CONTAINER_SET_FAILED_BY_BASIC_TYPE_WITHOUT_ID);
       }
 
-      this.duplicate(this.registry, options.id, options.value);
+      this.duplicate(this.store.getStore() ?? this.registry, options.id, options.value);
       return;
     }
 
@@ -82,6 +88,13 @@ export class Container {
       throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `[${toString(id)}] ${str}`);
     }
     return value;
+  }
+
+  public run<T = unknown>(fn: () => Promise<T>): Promise<T> {
+    return this.store.run(
+      new Map<IdentifierT, InstanceType<ConstructableT>>(),
+      fn,
+    );
   }
 
   public async findModuleExports(blacklist: ModuleConstructableT[] = []) {
@@ -127,7 +140,10 @@ export class Container {
   }
 
   private value<T = unknown>(id: IdentifierT<T>) {
-    const value = this.registry.get(id);
+    // async local storage
+    const store = this.store.getStore();
+
+    const value = store?.get(id) ?? this.registry.get(id);
     if (value === undefined) {
       return this.parent?.value(id);
     }
@@ -186,6 +202,11 @@ export class Container {
       this.collection.set(id, result);
     }
 
+    // cache execution
+    if (metadata.scope === ScopeType.EXECUTION) {
+      store?.set(id, result);
+    }
+
     return result;
   }
 
@@ -222,7 +243,9 @@ export class Container {
     this.set(id as ConstructableT);
   }
 
-  private duplicate(registry: typeof this.registry, id: IdentifierT, value: IdeintifiedT) {
+  private duplicate(
+    registry: Map<IdentifierT, Exclude<IdeintifiedT, ConstructableT> | InstanceType<ConstructableT>>,
+    id: IdentifierT, value: IdeintifiedT) {
     if (registry.has(id)) {
       return;
     }
