@@ -2,8 +2,9 @@ import path from "path";
 import { strict as assert } from "assert";
 import { Container, DEFAULT_CONTAINER_TAG, ErrorType } from "../src";
 import { createCustomError } from "../src/lib/utils";
-import { Application } from "./fixtures/module/app";
+import { Application, Application2 } from "./fixtures/module/app";
 import { A1, Module1 } from "./fixtures/module/mod1";
+import { Private, UnUsed } from "./fixtures/module/mod1/private";
 import { A2 } from "./fixtures/module/mod2";
 import { A3 } from "./fixtures/module/mod3/a3";
 
@@ -77,5 +78,29 @@ describe("module.test.js", () => {
     assert(error.message.includes("class Module4"));
     assert(error.message.includes(`child: ${path.join(__dirname, "fixtures/module/mod4")}`));
     assert(error.message.includes(`parent: ${path.join(__dirname, "fixtures/module/mod1")}`));
+  });
+
+  it("app2 should throw when inject a4", async () => {
+    let error = createCustomError();
+    try {
+      container.set(Application2);
+      container.get(Application2);
+    } catch (err) {
+      error = err;
+    }
+    assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
+    assert(error.message.includes("class A4"));
+    assert(error.message.includes("injected value not found"));
+  });
+
+  it("should choose correct module", async () => {
+    const containerModA = container.choose(A1);
+    assert(containerModA.name === DEFAULT_CONTAINER_TAG);
+
+    const containerPrivateA = container.choose(Private);
+    assert(containerPrivateA.name === path.join(__dirname, "fixtures/module/mod1"));
+
+    const containerUnusedA = container.choose(UnUsed);
+    assert(containerUnusedA.name === DEFAULT_CONTAINER_TAG);
   });
 });

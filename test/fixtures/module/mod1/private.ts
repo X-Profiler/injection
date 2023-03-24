@@ -14,3 +14,5 @@ export class Private {
     return this.logger.debug(this.b1.format("log from mod1::class Private"));
   }
 }
+
+export class UnUsed { }

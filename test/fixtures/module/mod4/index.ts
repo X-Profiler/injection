@@ -5,7 +5,9 @@ import { Private } from "../mod1/private";
 
 @Module()
 export class Module4 {
-  static parent = Module1;
+  static get parent() {
+    return Module1;
+  }
 }
 
 @Injectable()

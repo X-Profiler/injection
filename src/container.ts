@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { strict as assert } from "assert";
 import {
   ContainerSetOptions,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
@@ -73,9 +74,6 @@ export class Container {
 
     // get container
     const container = this.choose(clazz);
-    if (container.registry.has(metadata.id)) {
-      return;
-    }
     this.duplicate(container.registry, options.id || metadata.id, options.value || clazz);
   }
 
@@ -100,7 +98,8 @@ export class Container {
       return this;
     }
     const containers = this.containers;
-    const modulePath = Array.from(containers.keys()).filter(path => metadata.path.includes(path))[0];
+    const list = Array.from(containers.keys()).filter(path => metadata.path.includes(path));
+    const modulePath = list.sort((a, b) => b.length - a.length)[0];
     metadata.container ??= modulePath ?? DEFAULT_CONTAINER_TAG;
     const container = containers.get(metadata.container) ?? this;
     return container;
@@ -108,12 +107,24 @@ export class Container {
 
   public async findModuleExports(blacklist: ModuleConstructableT[] = []) {
     const modules = Container.modules.filter(item => !blacklist.includes(item));
+    modules.sort(a => (a.parent ? (modules.indexOf(a) < modules.indexOf(a.parent) ? 1 : -1) : -1));
     for (const mod of modules) {
       const metadata: ModuleMetadataT = Reflect.getMetadata(MODULE_METADATA_KEY, mod);
       const module = metadata.path;
       const containers = this.containers;
       if (!!this.containers.get(module)) {
         continue;
+      }
+
+      let parentMetadata: ModuleMetadataT | undefined;
+      if (mod.parent) {
+        parentMetadata = Reflect.getMetadata(MODULE_METADATA_KEY, mod.parent);
+        if (!parentMetadata) {
+          throw createCustomError(ErrorType.PARENT_CONTAINER_NOT_FOUND, str =>
+            `[${toString(mod)}] ` +
+            `child: ${metadata.path}, parent: ${toString(mod.parent)}, ` +
+            `${str}`);
+        }
       }
 
       try {
@@ -125,7 +136,7 @@ export class Container {
           if (!metadata) {
             continue;
           }
-          metadata.container = DEFAULT_CONTAINER_TAG;
+          metadata.container = mod.parent ? (parentMetadata?.path ?? DEFAULT_CONTAINER_TAG) : DEFAULT_CONTAINER_TAG;
           metadata.module = module;
         }
       } catch (err) {
@@ -133,12 +144,13 @@ export class Container {
       }
 
       if (mod.parent) {
-        const parentMetadata: ModuleMetadataT = Reflect.getMetadata(MODULE_METADATA_KEY, mod.parent);
-        const parentContainer = containers.get(parentMetadata.path);
+        assert(parentMetadata?.path);
+        const parentPath = parentMetadata.path;
+        const parentContainer = containers.get(parentPath);
         if (!parentContainer) {
           throw createCustomError(ErrorType.PARENT_CONTAINER_NOT_FOUND, str =>
             `[${toString(mod)}] ` +
-            `child: ${metadata.path}, parent: ${parentMetadata.path}, ` +
+            `child: ${metadata.path}, parent: ${parentPath}, ` +
             `${str}`);
         }
         containers.set(metadata.path, new Container(parentContainer, metadata.path, false));
