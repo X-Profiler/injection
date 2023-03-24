@@ -1,4 +1,4 @@
-import { ScopeType, PropType, ErrorType, ErrorMessage } from "./";
+import { ScopeType, PropType, ErrorType, ErrorMessage } from "./constant";
 
 export type ConstructableT<T = unknown> = new (...args: any[]) => T;
 

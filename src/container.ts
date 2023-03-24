@@ -72,10 +72,7 @@ export class Container {
     });
 
     // get container
-    const containers = this.containers;
-    const modulePath = Array.from(containers.keys()).filter(path => metadata.path.includes(path))[0];
-    metadata.container ??= modulePath ?? DEFAULT_CONTAINER_TAG;
-    const container = containers.get(metadata.container) ?? this;
+    const container = this.choose(clazz);
     if (container.registry.has(metadata.id)) {
       return;
     }
@@ -95,6 +92,18 @@ export class Container {
       new Map<IdentifierT, InstanceType<ConstructableT>>(),
       fn,
     );
+  }
+
+  public choose(clazz: ConstructableT): Container {
+    const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz) as ClassConstructorMetadataT;
+    if (!metadata) {
+      return this;
+    }
+    const containers = this.containers;
+    const modulePath = Array.from(containers.keys()).filter(path => metadata.path.includes(path))[0];
+    metadata.container ??= modulePath ?? DEFAULT_CONTAINER_TAG;
+    const container = containers.get(metadata.container) ?? this;
+    return container;
   }
 
   public async findModuleExports(blacklist: ModuleConstructableT[] = []) {

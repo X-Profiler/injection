@@ -1,4 +1,5 @@
-import { ErrorCodeT, ErrorMessage, ErrorType } from "../";
+import { ErrorCodeT } from "../type";
+import { ErrorMessage, ErrorType } from "../constant";
 
 class CustomError extends Error {
   public code: ErrorCodeT;

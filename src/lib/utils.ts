@@ -1,4 +1,5 @@
-import { CLASS_CONSTRUCTOR_TAG, ConstructableT } from "../";
+import { CLASS_CONSTRUCTOR_TAG } from "../constant";
+import { ConstructableT } from "../type";
 
 function isBoolean(bool: any) {
   return typeof bool === "boolean";

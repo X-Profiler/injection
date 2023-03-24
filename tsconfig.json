@@ -15,7 +15,7 @@
     // Emit
     "declaration": true,
     "downlevelIteration": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "newLine": "LF",
     "stripInternal": true,
     "sourceMap": true,
