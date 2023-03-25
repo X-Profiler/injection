@@ -106,8 +106,16 @@ export class Container {
   }
 
   public async findModuleExports(blacklist: ModuleConstructableT[] = []) {
-    const modules = Container.modules.filter(item => !blacklist.includes(item));
-    modules.sort(a => (a.parent ? (modules.indexOf(a) < modules.indexOf(a.parent) ? 1 : -1) : -1));
+    const modules: ModuleConstructableT[] = [];
+    for (const mod of Container.modules.filter(item => !blacklist.includes(item))) {
+      if (modules.includes(mod)) {
+        continue;
+      }
+      modules.push(mod);
+      if (mod.parent && !blacklist.includes(mod.parent)) {
+        modules.splice(modules.indexOf(mod), 0, mod.parent);
+      }
+    }
     for (const mod of modules) {
       const metadata: ModuleMetadataT = Reflect.getMetadata(MODULE_METADATA_KEY, mod);
       const module = metadata.path;
