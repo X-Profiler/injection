@@ -118,6 +118,9 @@ export class Container {
     }
     for (const mod of modules) {
       const metadata: ModuleMetadataT = Reflect.getMetadata(MODULE_METADATA_KEY, mod);
+      if (!metadata) {
+        continue;
+      }
       const module = metadata.path;
       const containers = this.containers;
       if (!!this.containers.get(module)) {

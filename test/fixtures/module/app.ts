@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "../../../src";
 import { A1 } from "./mod1";
 import { A4 } from "./mod4";
+import { A5 } from "./mod5";
 
 @Injectable()
 export class Application {
@@ -23,5 +24,15 @@ export class Application2 {
 
   run() {
     return this.a4.say();
+  }
+}
+
+@Injectable()
+export class Application3 {
+  @Inject()
+  private a5: A5;
+
+  run() {
+    return this.a5.say();
   }
 }

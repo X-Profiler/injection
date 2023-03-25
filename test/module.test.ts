@@ -7,12 +7,13 @@ import { A1, Module1 } from "./fixtures/module/mod1";
 import { Private, UnUsed } from "./fixtures/module/mod1/private";
 import { A2 } from "./fixtures/module/mod2";
 import { A3 } from "./fixtures/module/mod3/a3";
+import { NotAModule, Module5 } from "./fixtures/module/mod5";
 
 describe("module.test.js", () => {
   const container = new Container();
 
   beforeAll(async function () {
-    await container.findModuleExports([A3]);
+    await container.findModuleExports([A3, NotAModule, Module5]);
     container.set(Application);
   });
 
@@ -56,7 +57,7 @@ describe("module.test.js", () => {
   it("a3 should throw error", async () => {
     let error = createCustomError();
     try {
-      await container.findModuleExports();
+      await container.findModuleExports([NotAModule, Module5]);
       container.get(A3);
     } catch (err) {
       error = err;
@@ -102,5 +103,17 @@ describe("module.test.js", () => {
 
     const containerUnusedA = container.choose(UnUsed);
     assert(containerUnusedA.name === DEFAULT_CONTAINER_TAG);
+  });
+
+  it("should throw if parent is not a module", async () => {
+    let error = createCustomError();
+    try {
+      await container.findModuleExports([A3]);
+    } catch (err) {
+      error = err;
+    }
+    assert(error.code === ErrorType.PARENT_CONTAINER_NOT_FOUND);
+    assert(error.message.includes("parent: class NotAModule,"));
+    assert(error.message.includes(`child: ${path.join(__dirname, "fixtures/module/mod5")}`));
   });
 });

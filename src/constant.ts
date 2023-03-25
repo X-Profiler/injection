@@ -40,5 +40,5 @@ export const ErrorMessage = {
   [ErrorType.CONTAINER_SET_FAILED_BY_NOT_INJECTABLE]: "class is not injectable!",
   [ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND]: "injected value not found!",
   [ErrorType.PARENT_CONTAINER_NOT_FOUND]: "parent container not found!",
-  [ErrorType.MODULE_INDEX_NOT_FOUND]: "needs index at module root!",
+  [ErrorType.MODULE_INDEX_NOT_FOUND]: "needs index(entrance) at module root!",
 } as const;
