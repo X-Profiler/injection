@@ -98,7 +98,7 @@ export class Container {
       return this;
     }
     const containers = this.containers;
-    const list = Array.from(containers.keys()).filter(path => metadata.path.includes(path));
+    const list = Array.from(containers.keys()).filter(path => metadata.path.includes(path)).reverse();
     const modulePath = list.sort((a, b) => b.length - a.length)[0];
     metadata.container ??= modulePath ?? DEFAULT_CONTAINER_TAG;
     const container = containers.get(metadata.container) ?? this;
@@ -108,13 +108,7 @@ export class Container {
   public async findModuleExports(blacklist: ModuleConstructableT[] = []) {
     const modules: ModuleConstructableT[] = [];
     for (const mod of Container.modules.filter(item => !blacklist.includes(item))) {
-      if (modules.includes(mod)) {
-        continue;
-      }
-      modules.push(mod);
-      if (mod.parent && !blacklist.includes(mod.parent)) {
-        modules.splice(modules.indexOf(mod), 0, mod.parent);
-      }
+      this.formatModules(mod, modules, blacklist);
     }
     for (const mod of modules) {
       const metadata: ModuleMetadataT = Reflect.getMetadata(MODULE_METADATA_KEY, mod);
@@ -282,5 +276,35 @@ export class Container {
       return;
     }
     registry.set(id, value);
+  }
+
+  private getParents(mod: ModuleConstructableT, parent: ModuleConstructableT[] = []): ModuleConstructableT[] {
+    if (!mod.parent || parent.includes(mod.parent)) {
+      return parent;
+    }
+    parent.push(mod.parent);
+    return this.getParents(mod.parent, parent);
+  }
+
+  private formatModules(mod: ModuleConstructableT, modules: ModuleConstructableT[], blacklist: ModuleConstructableT[], child?: ModuleConstructableT) {
+    const parents = this.getParents(mod);
+
+    if (parents.includes(mod)) {
+      throw createCustomError(ErrorType.MODULE_CIRCULAR_DEPENDENCY, str => `${str} [${parents.map(p => toString(p)).join(", ")}] -> ${toString(mod)}`);
+    }
+
+    if (modules.includes(mod)) {
+      return;
+    }
+
+    if (child) {
+      modules.splice(modules.indexOf(child), 0, mod);
+    } else {
+      modules.push(mod);
+    }
+
+    if (mod.parent && !blacklist.includes(mod.parent)) {
+      this.formatModules(mod.parent, modules, blacklist, mod);
+    }
   }
 }

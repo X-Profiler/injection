@@ -2,6 +2,8 @@ import { Inject, Injectable } from "../../../src";
 import { A1 } from "./mod1";
 import { A4 } from "./mod4";
 import { A5 } from "./mod5";
+import { A6 } from "./mod6";
+import { A7 } from "./mod7";
 
 @Injectable()
 export class Application {
@@ -34,5 +36,25 @@ export class Application3 {
 
   run() {
     return this.a5.say();
+  }
+}
+
+@Injectable()
+export class Application4 {
+  @Inject()
+  private a6: A6;
+
+  run() {
+    return this.a6.say();
+  }
+}
+
+@Injectable()
+export class Application5 {
+  @Inject()
+  private a6: A7;
+
+  run() {
+    return this.a6.say();
   }
 }
