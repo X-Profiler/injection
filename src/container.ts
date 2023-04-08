@@ -75,12 +75,14 @@ export class Container {
     // get container
     const container = this.choose(clazz);
     this.duplicate(container.registry, options.id || metadata.id, options.value || clazz);
+
+    return this;
   }
 
   public get<T = unknown>(id: IdentifierT<T>): T {
     const value = this.value(id);
     if (value === undefined) {
-      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `[${toString(id)}] ${str}`);
+      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${this.name}> [${toString(id)}] ${str}`);
     }
     return value;
   }
