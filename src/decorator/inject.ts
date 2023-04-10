@@ -1,4 +1,4 @@
-import { is, getMetadataType, createCustomError, toString } from "../lib/utils";
+import { is, getOwnMetadataType, createCustomError, toString } from "../lib/utils";
 import {
   IdentifierT, RecordClassMemberMetadataT,
   InjectOptions,
@@ -19,7 +19,7 @@ export function Inject(options?: IdentifierT | InjectOptions) {
     options = is.identifier(options) ? { id: options as IdentifierT } : options as InjectOptions;
 
     // get & check id
-    const id: IdentifierT = is.includes(options, "id") ? options.id : getMetadataType(clazz, prop, index);
+    const id: IdentifierT = is.includes(options, "id") ? options.id : getOwnMetadataType(clazz, prop, index);
     if (is.includes(options, "id") && !is.identifier(options.id)) {
       throw createCustomError(ErrorType.INJECT_FAILED_WITH_ILLEGAL_IDENTIFIER);
     }
@@ -28,7 +28,7 @@ export function Inject(options?: IdentifierT | InjectOptions) {
     }
 
     // set props
-    const props = Reflect.getMetadata(CLASS_PROPS_KEY, clazz);
+    const props = Reflect.getOwnMetadata(CLASS_PROPS_KEY, clazz);
     if (Array.isArray(props)) {
       !props.includes(prop) && props.push(prop);
     } else {
@@ -42,7 +42,7 @@ export function Inject(options?: IdentifierT | InjectOptions) {
       metadata.type = PropType.FUNCTION;
       metadata.list.push({ id, index: index as number });
       // add origin
-      const origin = Reflect.getMetadata(key, clazz);
+      const origin = Reflect.getOwnMetadata(key, clazz);
       Array.isArray(origin?.list) && metadata.list.push(...origin.list);
     } else {
       metadata.list.push({ id, lazy: false, ...options });

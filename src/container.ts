@@ -55,7 +55,7 @@ export class Container {
 
     // set class
     const clazz = options.value as ConstructableT;
-    const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz) as ClassConstructorMetadataT;
+    const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz) as ClassConstructorMetadataT;
     if (!metadata) {
       throw createCustomError(ErrorType.CONTAINER_SET_FAILED_BY_NOT_INJECTABLE, str => `[${toString(clazz)}] ${str}`);
     }
@@ -112,7 +112,7 @@ export class Container {
     });
 
     // init class
-    const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, value) as ClassConstructorMetadataT;
+    const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, value) as ClassConstructorMetadataT;
     let result: T;
     if (args.length) {
       result = new (value as ConstructableT<T>)(...args.map(id => this.get(id)));
@@ -159,7 +159,7 @@ export class Container {
   }
 
   public choose(clazz: ConstructableT): Container {
-    const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz) as ClassConstructorMetadataT;
+    const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz) as ClassConstructorMetadataT;
     if (!metadata) {
       return this;
     }
@@ -183,7 +183,7 @@ export class Container {
             if (!is.class(clazz)) {
               continue;
             }
-            const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz as ConstructableT) as ClassConstructorMetadataT;
+            const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz as ConstructableT) as ClassConstructorMetadataT;
             if (!metadata) {
               continue;
             }
@@ -210,17 +210,24 @@ export class Container {
     return containers.get(tag) ?? containers.get(DEFAULT_CONTAINER_TAG) as Container;
   }
 
+  private getProps(clazz: ConstructableT, props: string[] = []) {
+    props.push(...(Reflect.getOwnMetadata(CLASS_PROPS_KEY, clazz) || []) as string[]);
+    const proto = Reflect.getPrototypeOf(clazz);
+    if (is.class(proto)) {
+      this.getProps(proto as ConstructableT, props);
+    }
+    return props;
+  }
+
   private parse(clazz: ConstructableT,
     handler: {
       constructor: (arg: ClassFunctionArgMetadataT, prop: string) => void,
       property: (metadata: ClassPropMetadataT, prop: string) => void,
       function: (args: ClassFunctionArgMetadataT[], prop: string) => void,
     }) {
-    for (const prop of (Reflect.getMetadata(CLASS_PROPS_KEY, clazz) || []) as string[]) {
-      const info = Reflect.getMetadata(`${CLASS_PROP_METADATA_PREFIX}${prop}`, clazz) as RecordClassMemberMetadataT;
-      if (!info) {
-        continue;
-      }
+    for (const prop of this.getProps(clazz)) {
+      const func = is.constructor(prop) ? "getMetadata" : "getOwnMetadata";
+      const info = Reflect[func](`${CLASS_PROP_METADATA_PREFIX}${prop}`, clazz) as RecordClassMemberMetadataT;
 
       if (is.constructor(prop)) {
         (info.list as ClassFunctionArgMetadataT[]).forEach(item => handler.constructor(item, prop));

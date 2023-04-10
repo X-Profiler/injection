@@ -19,9 +19,9 @@ describe("injectable.test.js", () => {
     assert(child1.config);
     const props1 = getClassProps(Inject.Child1);
     const props2 = getClassProps(Inject.Child2);
-    assert.deepEqual(props1, [CLASS_CONSTRUCTOR_TAG, "child1", "child2"]);
-    assert.deepEqual(props2, [CLASS_CONSTRUCTOR_TAG, "child1", "child2"]);
-    assert.equal(props1, props2);
+    assert.deepEqual(props1, ["child1", CLASS_CONSTRUCTOR_TAG]);
+    assert.deepEqual(props2, ["child2", CLASS_CONSTRUCTOR_TAG]);
+    assert.notEqual(props1, props2);
   });
 
   it("class AA props should be ok", () => {

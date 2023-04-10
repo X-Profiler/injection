@@ -64,12 +64,12 @@ export const is = {
   includes,
 };
 
-export function getMetadataType(clazz: ConstructableT, prop: string, index?: number) {
+export function getOwnMetadataType(clazz: ConstructableT, prop: string, index?: number) {
   return isConstructor(prop) ?
-    Reflect.getMetadata("design:paramtypes", clazz)[index as number] :
+    Reflect.getOwnMetadata("design:paramtypes", clazz)[index as number] :
     isNumber(index) ?
-      Reflect.getMetadata("design:paramtypes", clazz.prototype, prop)[index as number] :
-      Reflect.getMetadata("design:type", clazz.prototype, prop);
+      Reflect.getOwnMetadata("design:paramtypes", clazz.prototype, prop)[index as number] :
+      Reflect.getOwnMetadata("design:type", clazz.prototype, prop);
 }
 
 export function toString(val: any): string {
