@@ -1,16 +1,14 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import {
   Container, Injectable,
-  IdentifierT, IdeintifiedT, ConstructableT
+  IdentifierT, IdeintifiedT, ConstructableT,
 } from ".";
 
 @Injectable()
 export class Store {
-  public containers: Map<string, Container>;
-  public storage: AsyncLocalStorage<Map<IdentifierT, Exclude<IdeintifiedT, ConstructableT> | InstanceType<ConstructableT>>>;
-
-  constructor() {
-    this.containers = new Map<string, Container>();
-    this.storage = new AsyncLocalStorage();
-  }
+  static modules: ConstructableT[] = [];
+  static containers: Map<string, Container> = new Map<string, Container>();
+  static storage: AsyncLocalStorage<
+  Map<IdentifierT, Exclude<IdeintifiedT, ConstructableT> | InstanceType<ConstructableT>>
+  > = new AsyncLocalStorage();
 }

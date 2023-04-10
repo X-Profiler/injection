@@ -41,6 +41,7 @@ export interface InjectBaseOptions {
 export interface ContainerSetOptions {
   value: IdeintifiedT,
   id?: IdentifierT,
+  export?: boolean,
 }
 
 export interface RecordClassMemberMetadataT {
@@ -48,10 +49,3 @@ export interface RecordClassMemberMetadataT {
   list: ClassMemberMetadataT[],
 }
 
-export interface ModuleMetadataT {
-  path: string,
-}
-
-export interface ModuleConstructableT extends ConstructableT {
-  parent?: ModuleConstructableT,
-}

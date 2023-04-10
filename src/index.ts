@@ -7,3 +7,4 @@ export * from "./type";
 export * from "./constant";
 export * from "./container";
 export * from "./store";
+export * from "./module";

@@ -2,6 +2,7 @@ import { strict as assert } from "assert";
 import {
   ClassFunctionArgMetadataT, ClassPropMetadataT,
   ErrorType, PropType, CLASS_CONSTRUCTOR_TAG,
+  Container,
 } from "../../src";
 import { createCustomError } from "../../src/lib/utils";
 import { Inject } from "../fixtures/decorator";
@@ -10,6 +11,19 @@ import { getClassProps, getClassMemberMetadata } from "../fixtures/utils";
 
 
 describe("injectable.test.js", () => {
+  it("class metadata should be ok", () => {
+    const container = new Container();
+    container.set(Inject.Child1);
+    container.set(Inject.Child2);
+    const child1 = container.get(Inject.Child1);
+    assert(child1.config);
+    const props1 = getClassProps(Inject.Child1);
+    const props2 = getClassProps(Inject.Child2);
+    assert.deepEqual(props1, [CLASS_CONSTRUCTOR_TAG, "child1", "child2"]);
+    assert.deepEqual(props2, [CLASS_CONSTRUCTOR_TAG, "child1", "child2"]);
+    assert.equal(props1, props2);
+  });
+
   it("class AA props should be ok", () => {
     const props = getClassProps(Inject.AA);
     assert.deepEqual(props, ["config1", "config2", "config3", "config4", "config5", "getConfig", CLASS_CONSTRUCTOR_TAG]);

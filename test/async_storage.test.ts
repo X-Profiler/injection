@@ -56,7 +56,7 @@ describe("async_storage.test.js", () => {
     let idx2_2: number | undefined;
 
     await container.run(async () => {
-      container.set({ id, value: 1 });
+      container.set({ id, value: 1, export: true });
 
       await new Promise(resolve => setTimeout(() => {
         idx1_1 = container.get(id);

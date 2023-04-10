@@ -31,3 +31,22 @@ export class AA {
     return this.config1 || this.config2 || this.config3 || this.config4 || this.config5 || this.config6 || this.config7 || config;
   }
 }
+
+class Base {
+  public config: Config;
+  constructor(@Inject() config: Config) {
+    this.config = config;
+  }
+}
+
+@Injectable()
+export class Child1 extends Base {
+  @Inject()
+  public child1: Config;
+}
+
+@Injectable()
+export class Child2 extends Base {
+  @Inject()
+  public child2: Config;
+}

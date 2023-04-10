@@ -2,11 +2,13 @@ import {
   ContainerSetOptions,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
   IdentifierT, IdeintifiedT, ErrorType, ScopeType, ConstructableT, ClassConstructorMetadataT, RecordClassMemberMetadataT,
-  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, MODULE_METADATA_KEY, ModuleMetadataT, ModuleConstructableT,
+  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, TRUE_CONTAINER,
   Injectable,
 } from ".";
+import { BaseModule } from "./module";
 import { Store } from "./store";
 import { createCustomError, is, toString } from "./lib/utils";
+
 
 @Injectable()
 export class Container {
@@ -14,12 +16,16 @@ export class Container {
   public children: Container[] = [];
   public registry = new Map<IdentifierT, IdeintifiedT>();
   public collection = new Map<IdentifierT, InstanceType<ConstructableT>>;
-  public store: Store;
 
-  constructor(tag: string = DEFAULT_CONTAINER_TAG, store: Store = new Store()) {
+  constructor(tag: string = DEFAULT_CONTAINER_TAG, root = true) {
     this.tag = tag;
-    this.store = store;
     this.containers.set(tag, this);
+
+    if (root) {
+      for (const mod of BaseModule.tags()) {
+        new Container(mod, false);
+      }
+    }
   }
 
   public set(options: ConstructableT | ContainerSetOptions) {
@@ -31,7 +37,19 @@ export class Container {
         throw createCustomError(ErrorType.CONTAINER_SET_FAILED_BY_BASIC_TYPE_WITHOUT_ID);
       }
 
-      this.duplicate(this.aregistry, options.id, options.value);
+      if (options.export) {
+        const container = this.scontainer(this.tag);
+        const parents = BaseModule.parentship.get(container.tag) || [DEFAULT_CONTAINER_TAG];
+        for (const parent of parents) {
+          const pcontainer = this.scontainer(parent);
+          if (pcontainer.tag === container.tag) {
+            continue;
+          }
+          pcontainer.set({ id: options.id, value: { [TRUE_CONTAINER]: container.tag } });
+        }
+      }
+
+      this.duplicate(options.id, options.value);
       return this;
     }
 
@@ -52,18 +70,25 @@ export class Container {
 
     // get container
     const container = this.choose(clazz);
-    this.duplicate(container.registry, options.id || metadata.id, options.value || clazz);
+    container.duplicate(options.id || metadata.id, options.value);
 
     return this;
   }
 
-  public get<T = unknown>(id: IdentifierT<T>): T {
-    // async local storage
-    const store = this.store.storage.getStore();
+  public get<T = unknown>(id: IdentifierT<T>, tag = ""): T {
+    const store = Store.storage.getStore();
 
     const value = store?.get(id) ?? this.registry.get(id);
     if (value === undefined) {
-      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${this.tag}> [${toString(id)}] ${str}`);
+      if (this.tag !== DEFAULT_CONTAINER_TAG) {
+        return this.scontainer(DEFAULT_CONTAINER_TAG).get(id, `${this.tag} => `);
+      }
+      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${tag}${this.tag}> [${toString(id)}] ${str}`);
+    }
+
+    if (is.includes(value, TRUE_CONTAINER)) {
+      const container = this.scontainer(value[TRUE_CONTAINER]);
+      return container.get(id, `${this.tag} => `);
     }
 
     if (!is.class(value) || value === null) {
@@ -127,7 +152,7 @@ export class Container {
   }
 
   public run<T = unknown>(fn: () => Promise<T>): Promise<T> {
-    return this.store.storage.run(
+    return Store.storage.run(
       new Map<IdentifierT, InstanceType<ConstructableT>>(),
       fn,
     );
@@ -141,17 +166,48 @@ export class Container {
     const containers = this.containers;
     const list = Array.from(containers.keys()).filter(path => metadata.path.includes(path)).reverse();
     const modulePath = list.sort((a, b) => b.length - a.length)[0];
-    metadata.container ??= modulePath ?? DEFAULT_CONTAINER_TAG;
-    const container = containers.get(metadata.container) ?? this;
+    metadata.container = modulePath;
+    const container = this.scontainer(metadata.container);
     return container;
   }
 
+  public async ready(commons: string[] = []) {
+    for (const parent of BaseModule.childship.keys()) {
+      const children = BaseModule.childship.get(parent) as string[];
+      const container = this.scontainer(parent);
+      commons.forEach(common => !children.includes(common) && children.push(common));
+
+      for (const child of children) {
+        try {
+          for (const clazz of (Object.values(await import(child)))) {
+            if (!is.class(clazz)) {
+              continue;
+            }
+            const metadata = Reflect.getMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz as ConstructableT) as ClassConstructorMetadataT;
+            if (!metadata) {
+              continue;
+            }
+
+            container.set({ id: metadata.id, value: { [TRUE_CONTAINER]: child } });
+          }
+        } catch (err) {
+          throw createCustomError(ErrorType.MODULE_INDEX_NOT_FOUND, str => `mod: ${child} ${str}\n\nextra: ${err}`);
+        }
+      }
+    }
+  }
+
   private get aregistry() {
-    return this.store.storage.getStore() ?? this.registry;
+    return Store.storage.getStore() ?? this.registry;
   }
 
   private get containers() {
-    return this.store.containers;
+    return Store.containers;
+  }
+
+  private scontainer(tag: string) {
+    const containers = this.containers;
+    return containers.get(tag) ?? containers.get(DEFAULT_CONTAINER_TAG) as Container;
   }
 
   private parse(clazz: ConstructableT,
@@ -161,7 +217,7 @@ export class Container {
       function: (args: ClassFunctionArgMetadataT[], prop: string) => void,
     }) {
     for (const prop of (Reflect.getMetadata(CLASS_PROPS_KEY, clazz) || []) as string[]) {
-      const info = Reflect.getMetadata(`${CLASS_PROP_METADATA_PREFIX}${prop}`, clazz) as RecordClassMemberMetadataT | undefined;
+      const info = Reflect.getMetadata(`${CLASS_PROP_METADATA_PREFIX}${prop}`, clazz) as RecordClassMemberMetadataT;
       if (!info) {
         continue;
       }
@@ -191,9 +247,8 @@ export class Container {
     this.set(id as ConstructableT);
   }
 
-  private duplicate(
-    registry: Map<IdentifierT, Exclude<IdeintifiedT, ConstructableT> | InstanceType<ConstructableT>>,
-    id: IdentifierT, value: IdeintifiedT) {
+  private duplicate(id: IdentifierT, value: IdeintifiedT) {
+    const registry = this.aregistry;
     if (registry.has(id)) {
       return;
     }
