@@ -1,5 +1,5 @@
 import path from "path";
-import { getCalleeFromStack } from "./lib/utils";
+import { getCalleeFromStack } from "./utils/stack";
 
 class Module {
   public tag: string;

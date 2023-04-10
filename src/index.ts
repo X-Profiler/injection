@@ -1,10 +1,7 @@
 import "reflect-metadata";
 
-// decorator
-export * from "./decorator/index";
+export * from "./decorator";
+export * from "./shared";
 
-export * from "./type";
-export * from "./constant";
 export * from "./container";
-export * from "./store";
 export * from "./module";

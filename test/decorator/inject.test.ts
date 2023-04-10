@@ -4,7 +4,7 @@ import {
   ErrorType, PropType, CLASS_CONSTRUCTOR_TAG,
   Container,
 } from "../../src";
-import { createCustomError } from "../../src/lib/utils";
+import { createCustomError } from "../../src/utils";
 import { Inject } from "../fixtures/decorator";
 import { Config } from "../fixtures/items/config";
 import { getClassProps, getClassMemberMetadata } from "../fixtures/utils";

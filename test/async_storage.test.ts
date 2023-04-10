@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import { Container, ErrorType } from "../src";
-import { createCustomError } from "../src/lib/utils";
+import { createCustomError } from "../src/utils";
 import { Singleton, Execution } from "./fixtures/items/async";
 
 describe("async_storage.test.js", () => {

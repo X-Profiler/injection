@@ -1,7 +1,7 @@
 import path from "path";
 import { strict as assert } from "assert";
 import { Container, DEFAULT_CONTAINER_TAG, ErrorType } from "../src";
-import { createCustomError } from "../src/lib/utils";
+import { createCustomError } from "../src/utils";
 import { Application } from "./fixtures/modules/app";
 import { ModuleCommon, Message } from "./fixtures/modules/common";
 import { Unused } from "./fixtures/modules/mod1/chore";

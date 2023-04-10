@@ -1,13 +1,16 @@
+import { Injectable } from "./decorator/injectable";
 import {
-  ContainerSetOptions,
-  CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType,
-  IdentifierT, IdeintifiedT, ErrorType, ScopeType, ConstructableT, ClassConstructorMetadataT, RecordClassMemberMetadataT,
-  ClassFunctionArgMetadataT, ClassPropMetadataT, DEFAULT_CONTAINER_TAG, TRUE_CONTAINER,
-  Injectable,
-} from ".";
+  PropType, ErrorType, ScopeType,
+  CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, DEFAULT_CONTAINER_TAG, TRUE_CONTAINER,
+} from "./shared/constant";
+import { Store } from "./shared/store";
+import {
+  ContainerSetOptions, IdentifierT, IdeintifiedT, ConstructableT,
+  ClassConstructorMetadataT, RecordClassMemberMetadataT, ClassFunctionArgMetadataT, ClassPropMetadataT,
+} from "./shared/type";
+import { createCustomError } from "./utils/error";
+import { is, toString } from "./utils/helper";
 import { BaseModule } from "./module";
-import { Store } from "./store";
-import { createCustomError, is, toString } from "./lib/utils";
 
 
 @Injectable()

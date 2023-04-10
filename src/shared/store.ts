@@ -1,10 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import {
-  Container, Injectable,
-  IdentifierT, IdeintifiedT, ConstructableT,
-} from ".";
+import { IdentifierT, IdeintifiedT, ConstructableT } from "../shared/type";
+import { Container } from "../container";
 
-@Injectable()
 export class Store {
   static modules: ConstructableT[] = [];
   static containers: Map<string, Container> = new Map<string, Container>();

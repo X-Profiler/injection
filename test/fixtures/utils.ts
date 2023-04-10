@@ -3,7 +3,7 @@ import {
   ClassConstructorMetadataT, ConstructableT,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, RecordClassMemberMetadataT,
 } from "../../src";
-import { is } from "../../src/lib/utils";
+import { is } from "../../src/utils";
 
 export function getClassConstructorMetadata(target: ConstructableT): ClassConstructorMetadataT {
   return Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, target);

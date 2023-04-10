@@ -1,5 +1,5 @@
-import { ErrorCodeT } from "../type";
-import { ErrorMessage, ErrorType } from "../constant";
+import { ErrorMessage, ErrorType } from "../shared/constant";
+import { ErrorCodeT } from "../shared/type";
 
 class CustomError extends Error {
   public code: ErrorCodeT;

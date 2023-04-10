@@ -1,5 +1,5 @@
 import path from "path";
-import { getCalleeFromStack } from "../lib/utils";
+import { getCalleeFromStack } from "../utils/stack";
 import { BaseModule } from "../module";
 
 export function DefineModule() {

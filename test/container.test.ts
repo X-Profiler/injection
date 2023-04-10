@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import { Container, ErrorType } from "../src";
-import { createCustomError } from "../src/lib/utils";
+import { createCustomError } from "../src/utils";
 import { UnInjectable, Foo, Bar } from "./fixtures/items/container";
 import { Config, Config2, TransientConfig } from "./fixtures/items/config";
 

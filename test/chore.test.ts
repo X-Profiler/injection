@@ -1,5 +1,5 @@
 import { strict as assert } from "assert";
-import { getCalleeFromStack, toString } from "../src/lib/utils";
+import { getCalleeFromStack, toString } from "../src/utils";
 
 describe("chore.test.js", () => {
   describe("stack util", () => {

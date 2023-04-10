@@ -1,5 +1,5 @@
-import { CLASS_CONSTRUCTOR_TAG } from "../constant";
-import { ConstructableT } from "../type";
+import { CLASS_CONSTRUCTOR_TAG } from "../shared/constant";
+import { ConstructableT } from "../shared/type";
 
 function isBoolean(bool: any) {
   return typeof bool === "boolean";
@@ -95,7 +95,3 @@ export function toString(val: any): string {
 
   return `class ${(val as ConstructableT).name}`;
 }
-
-export * from "./error";
-
-export * from "./stack";

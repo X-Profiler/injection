@@ -1,9 +1,7 @@
-import { is, getOwnMetadataType, createCustomError, toString } from "../lib/utils";
-import {
-  IdentifierT, RecordClassMemberMetadataT,
-  InjectOptions,
-  CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType, ErrorType, CLASS_CONSTRUCTOR_TAG,
-} from "../";
+import { CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, PropType, ErrorType, CLASS_CONSTRUCTOR_TAG } from "../shared/constant";
+import { IdentifierT, RecordClassMemberMetadataT, InjectOptions } from "../shared/type";
+import { createCustomError } from "../utils/error";
+import { is, getOwnMetadataType, toString } from "../utils/helper";
 
 export function Inject(options?: IdentifierT | InjectOptions) {
   return (target: any, prop: string | undefined, index?: number) => {

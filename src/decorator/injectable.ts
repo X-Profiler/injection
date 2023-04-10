@@ -1,9 +1,7 @@
 import path from "path";
-import {
-  InjectableOptions, ClassConstructorMetadataT,
-  CLASS_CONSTRUCTOR_METADATA_KEY, ScopeType,
-} from "../";
-import { getCalleeFromStack } from "../lib/utils";
+import { CLASS_CONSTRUCTOR_METADATA_KEY, ScopeType } from "../shared/constant";
+import { InjectableOptions, ClassConstructorMetadataT } from "../shared/type";
+import { getCalleeFromStack } from "../utils/stack";
 
 export function Injectable(options?: Partial<InjectableOptions>) {
   return (target: any) => {
