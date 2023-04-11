@@ -174,11 +174,23 @@ export class Container {
     return container;
   }
 
+  private addCommon(commons: string[]) {
+    for (const mod of BaseModule.tags()) {
+      commons.forEach(common => {
+        if (mod === common) {
+          return;
+        }
+        BaseModule.ship(mod, common, BaseModule.childship);
+        BaseModule.ship(common, mod, BaseModule.parentship);
+      });
+    }
+  }
+
   public async ready(commons: string[] = []) {
     for (const parent of BaseModule.childship.keys()) {
       const children = BaseModule.childship.get(parent) as string[];
       const container = this.scontainer(parent);
-      commons.forEach(common => !children.includes(common) && children.push(common));
+      this.addCommon(commons);
 
       for (const child of children) {
         try {

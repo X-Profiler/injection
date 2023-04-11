@@ -31,6 +31,7 @@ export const ErrorType = {
   PARENT_CONTAINER_NOT_FOUND: `${PREFIX}::PARENT_MODULE_NOT_FOUND`,
   MODULE_INDEX_NOT_FOUND: `${PREFIX}::MODULE_INDEX_NOT_FOUND`,
   MODULE_CIRCULAR_DEPENDENCY: `${PREFIX}::MODULE_CIRCULAR_DEPENDENCY`,
+  MODULE_DECLARED_PARENTS: `${PREFIX}::MODULE_DECLARED_PARENTS`,
 } as const;
 
 export const ErrorMessage = {
@@ -44,4 +45,5 @@ export const ErrorMessage = {
   [ErrorType.PARENT_CONTAINER_NOT_FOUND]: "parent container not found!",
   [ErrorType.MODULE_INDEX_NOT_FOUND]: "needs index(entrance) at module root!",
   [ErrorType.MODULE_CIRCULAR_DEPENDENCY]: "circular dependency found!",
+  [ErrorType.MODULE_DECLARED_PARENTS]: "module already declare parents!",
 } as const;

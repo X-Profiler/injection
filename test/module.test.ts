@@ -58,9 +58,10 @@ describe("module.test.js", () => {
   it("should throw error when inject module private class", async () => {
     let error = createCustomError();
     try {
-      const { Application2 } = await import("./fixtures/modules/app2");
-      container.set(Application2);
-      const app = container.get(Application2);
+      const { InjectPrivate } = await import("./fixtures/modules/apps/inject_private");
+      container.set(InjectPrivate);
+      await container.ready([ModuleCommon.tag()]);
+      const app = container.get(InjectPrivate);
       app.msg();
     } catch (err) {
       error = err;
@@ -68,6 +69,23 @@ describe("module.test.js", () => {
     assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
     assert(error.message.includes("class Module1Private"));
     assert(error.message.includes("injected value not found"));
+  });
+
+  it("should throw error when inject custom module", async () => {
+    let error = createCustomError();
+    try {
+      const { InjectCustomModule } = await import("./fixtures/modules/apps/inject_custom_module");
+      container.set(InjectCustomModule);
+      await container.ready();
+      const app = container.get(InjectCustomModule);
+      app.msg();
+    } catch (err) {
+      error = err;
+    }
+    assert(error.code === ErrorType.MODULE_DECLARED_PARENTS);
+    assert(error.message.includes(`declared parents: [ ${path.join(__dirname, "fixtures/modules/mod1")} ]`));
+    assert(error.message.includes(`now is: <${path.join(__dirname, "fixtures/modules/apps")}>`));
+    assert(error.message.includes("module already declare parents"));
   });
 
   it("should throw error when module not have index(entrance)", async () => {

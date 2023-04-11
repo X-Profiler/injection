@@ -4,6 +4,11 @@ import { BaseModule } from "../module";
 
 export function DefineModule() {
   return (target: any) => {
-    BaseModule.modules.set(target, BaseModule.create(path.dirname(getCalleeFromStack())));
+    const modulePath = path.dirname(getCalleeFromStack());
+    const parents = (target.parents as typeof BaseModule[]).map(parent => {
+      parent.register(false, modulePath);
+      return BaseModule.module(parent);
+    });
+    BaseModule.modules.set(target, BaseModule.create(modulePath, parents));
   };
 }
