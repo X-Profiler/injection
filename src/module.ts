@@ -1,5 +1,6 @@
 import path from "path";
 import { ErrorType } from "./shared/constant";
+import { ModuleRelationType } from "./shared/type";
 import { createCustomError } from "./utils/error";
 import { toString } from "./utils/helper";
 import { getCalleeFromStack } from "./utils/stack";
@@ -18,6 +19,7 @@ export class BaseModule {
   static modules: Map<typeof BaseModule, Module> = new Map<typeof BaseModule, Module>();
   static childship: Map<string, string[]> = new Map<string, string[]>();
   static parentship: Map<string, string[]> = new Map<string, string[]>();
+  static relationtype: Map<string, ModuleRelationType> = new Map<string, ModuleRelationType>();
 
   static get parents(): BaseModule[] {
     return [];
@@ -39,13 +41,28 @@ export class BaseModule {
     return Array.from(this.modules.keys()).map(key => this.tag(key));
   }
 
-  static ship(key: string, value: string, ship: Map<string, string[]>) {
+  static compose(parent: string, value: string) {
+    return `${parent}::${value}`;
+  }
+
+  static ship(
+    key: string,
+    value: string, ship: Map<string, string[]>,
+    options?: { key: string, value: ModuleRelationType },
+  ) {
     const list: string[] = ship.get(key) || [];
     value && !list.includes(value) && list.push(value);
     ship.set(key, list);
+    if (options) {
+      this.relationtype.set(options.key, options.value);
+    }
   }
 
-  static register(parent = true, registedTag?: string) {
+  static register(
+    parent = true,
+    registedTag?: string,
+    type?: ModuleRelationType,
+  ) {
     // get parent and child tag
     registedTag ??= path.dirname(getCalleeFromStack(2));
     const moduleTag = (this.modules.get(this) as Module).tag;
@@ -63,7 +80,8 @@ export class BaseModule {
     }
 
     // set childship
-    this.ship(parentTag, childTag, this.childship);
+    const options = type ? { key: this.compose(parentTag, childTag), value: type } : undefined;
+    this.ship(parentTag, childTag, this.childship, options);
     // set parentship
     this.ship(childTag, parentTag, this.parentship);
   }

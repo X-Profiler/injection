@@ -1,3 +1,7 @@
+import path from "path";
+import fs from "fs/promises";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { Injectable } from "./decorator/injectable";
 import {
   PropType, ErrorType, ScopeType,
@@ -180,7 +184,10 @@ export class Container {
         if (mod === common) {
           return;
         }
-        BaseModule.ship(mod, common, BaseModule.childship);
+        BaseModule.ship(mod, common, BaseModule.childship, {
+          key: BaseModule.compose(mod, common),
+          value: { desc: "全局公共模块" },
+        });
         BaseModule.ship(common, mod, BaseModule.parentship);
       });
     }
@@ -210,6 +217,48 @@ export class Container {
         }
       }
     }
+  }
+
+  public async dump(output?: string) {
+    const array = [] as { parent: string, child?: string }[];
+    const tags = BaseModule.tags();
+    const root = this.findCommonPrefix(tags);
+    tags
+      .forEach(mod => {
+        if (BaseModule.childship.has(mod)) {
+          const children = BaseModule.childship.get(mod) as string[];
+          array.push(...children.map(child => ({ parent: mod, child })));
+        } else {
+          array.push({ parent: mod });
+        }
+      });
+
+    const relations = array
+      .filter((item, index) => index === array.findIndex(obj => JSON.stringify(obj) === JSON.stringify(item)))
+      .map(item => ({ ...item, parent: path.relative(root, item.parent), child: item.child ? path.relative(root, item.child) : undefined }))
+      .filter(item => item.parent);
+
+
+    const files = { mmd: "", svg: "" };
+    if (output) {
+      const content =
+        "graph LR\n" +
+        `root>"Root: ${root}"]\n` +
+        relations.map(item => {
+          const key = item.child ? BaseModule.compose(path.join(root, item.parent), path.join(root, item.child)) : "";
+          const desc = BaseModule.relationtype.get(key)?.desc;
+          return `${item.parent}${item.child ? ` -->${desc ? ` |${desc}|` : ""} ${item.child}` : ""}`;
+        }).join("\n");
+      const mmd = path.join(output, "__module__.mmd");
+      await fs.writeFile(mmd, content);
+      const svg = path.join(output, "__module__.svg");
+      await promisify(exec)(`mmdc -i ${mmd} -o ${svg}`, { cwd: output });
+      files.mmd = mmd;
+      files.svg = svg;
+      console.log(`mmd to: ${mmd}\nsvg to: ${svg}`);
+    }
+
+    return { root, relations, files };
   }
 
   private get aregistry() {
@@ -275,5 +324,22 @@ export class Container {
       return;
     }
     registry.set(id, value);
+  }
+
+  private findCommonPrefix(strs) {
+    if (!strs || strs.length === 0) {
+      return "";
+    }
+    const firstStr = strs[0];
+    const len = firstStr.length;
+    for (let i = 0; i < len; i++) {
+      const currChar = firstStr[i];
+      for (let j = 1; j < strs.length; j++) {
+        if (i >= strs[j].length || strs[j][i] !== currChar) {
+          return firstStr.substring(0, i);
+        }
+      }
+    }
+    return firstStr;
   }
 }

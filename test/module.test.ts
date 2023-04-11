@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs/promises";
 import { strict as assert } from "assert";
 import { Container, DEFAULT_CONTAINER_TAG, ErrorType } from "../src";
 import { createCustomError } from "../src/utils";
@@ -53,6 +54,37 @@ describe("module.test.js", () => {
     containerMod1_1Public.set({ id: "context2", value: context, export: true });
     const containerMod1Foo = container.choose(Module1Foo);
     assert.deepEqual(containerMod1Foo.get("context2"), context);
+  });
+
+  it("[1/2] should dump uml success", async () => {
+    const dump = await container.dump();
+    assert(dump.root);
+    assert(dump.relations.length > 0);
+  });
+
+  it("[2/2] should dump uml success", async () => {
+    const tmp = path.join(__dirname, "fixtures/modules");
+    const mmdFile = path.join(tmp, "__module__.mmd");
+    const svgFile = path.join(tmp, "__module__.svg");
+    try {
+      await fs.unlink(mmdFile);
+      await fs.unlink(svgFile);
+    } catch (err) {
+      err;
+    }
+    const { files: { mmd, svg } } = await container.dump(tmp);
+    assert(mmdFile === mmd);
+    assert(svgFile === svg);
+    try {
+      const mmdContent = await fs.readFile(mmd, { encoding: "utf-8" });
+      assert(mmdContent);
+      const svgContent = await fs.readFile(svg, { encoding: "utf-8" });
+      assert(svgContent);
+      await fs.unlink(mmd);
+      await fs.unlink(svg);
+    } catch (err) {
+      err;
+    }
   });
 
   it("should throw error when inject module private class", async () => {

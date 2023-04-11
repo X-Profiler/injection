@@ -49,3 +49,7 @@ export interface RecordClassMemberMetadataT {
   list: ClassMemberMetadataT[],
 }
 
+export interface ModuleRelationType {
+  desc: string,
+}
+

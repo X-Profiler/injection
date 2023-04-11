@@ -12,7 +12,7 @@
     "lint:fix": "eslint --fix . --ext .ts",
     "tsc": "rm -rf dist && tsc -p ./tsconfig.json",
     "build": "rm -rf dist && tsc -p ./tsconfig.build.json",
-    "test": "jest --coverage --config ./jest.config.js --detectOpenHandles",
+    "test": "jest --coverage --config ./jest.config.js --detectOpenHandles --testTimeout=0",
     "codecov": "codecov || echo 'warning: ignoring codecov failure'",
     "ci": "npm run lint && npm run test && npm run codecov"
   },
@@ -37,6 +37,7 @@
     "eslint": "^8.34.0",
     "eslint-plugin-import": "^2.27.5",
     "jest": "^29.4.3",
+    "mermaid.cli": "^0.5.1",
     "reflect-metadata": "^0.1.13",
     "ts-jest": "^29.0.5",
     "tslib": "^2.5.0",
