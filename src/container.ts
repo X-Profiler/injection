@@ -23,15 +23,27 @@ export class Container {
   public children: Container[] = [];
   public registry = new Map<IdentifierT, IdeintifiedT>();
   public collection = new Map<IdentifierT, InstanceType<ConstructableT>>;
+  public commons: string[] = [];
 
-  constructor(tag: string = DEFAULT_CONTAINER_TAG, root = true) {
+  constructor(commons: string[] = [], tag: string = DEFAULT_CONTAINER_TAG, init = true) {
     this.tag = tag;
-    this.containers.set(tag, this);
+    this.commons = commons;
+    if (init) {
+      this.containers.clear();
+    }
+    this.filling();
+  }
 
-    if (root) {
-      for (const mod of BaseModule.tags()) {
-        new Container(mod, false);
+  public filling() {
+    const containers = this.containers;
+    if (!containers.has(this.tag)) {
+      containers.set(this.tag, this);
+    }
+    for (const mod of BaseModule.tags()) {
+      if (containers.has(mod)) {
+        continue;
       }
+      new Container(this.commons, mod, false);
     }
   }
 
@@ -82,20 +94,22 @@ export class Container {
     return this;
   }
 
-  public get<T = unknown>(id: IdentifierT<T>, tag = ""): T {
+  public get<T = unknown>(id: IdentifierT<T>, trace: string[] = []): T {
     const store = Store.storage.getStore();
 
     const value = store?.get(id) ?? this.registry.get(id);
     if (value === undefined) {
       if (this.tag !== DEFAULT_CONTAINER_TAG) {
-        return this.scontainer(DEFAULT_CONTAINER_TAG).get(id, `${this.tag} => `);
+        return this.scontainer(DEFAULT_CONTAINER_TAG).get(id, [...trace, this.tag]);
       }
-      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${tag}${this.tag}> [${toString(id)}] ${str}`);
+      throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${trace.join(" => ")}> [${toString(id)}] ${str}`);
     }
 
     if (is.includes(value, TRUE_CONTAINER)) {
-      const container = this.scontainer(value[TRUE_CONTAINER]);
-      return container.get(id, `${this.tag} => `);
+      if (trace.includes(this.tag)) {
+        throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${trace.join(" => ")} (loop: ${this.tag})> [${toString(id)}] ${str}`);
+      }
+      return this.scontainer(value[TRUE_CONTAINER]).get(id, [...trace, this.tag]);
     }
 
     if (!is.class(value) || value === null) {
@@ -178,9 +192,9 @@ export class Container {
     return container;
   }
 
-  private addCommon(commons: string[]) {
+  private addCommon() {
     for (const mod of BaseModule.tags()) {
-      commons.forEach(common => {
+      this.commons.forEach(common => {
         if (mod === common) {
           return;
         }
@@ -193,11 +207,12 @@ export class Container {
     }
   }
 
-  public async ready(commons: string[] = []) {
+  public async ready() {
+    this.filling();
     for (const parent of BaseModule.childship.keys()) {
       const children = BaseModule.childship.get(parent) as string[];
       const container = this.scontainer(parent);
-      this.addCommon(commons);
+      this.addCommon();
 
       for (const child of children) {
         try {

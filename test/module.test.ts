@@ -10,11 +10,11 @@ import { Module1Foo } from "./fixtures/modules/mod1";
 import { Module1_1Public } from "./fixtures/modules/mod1/mod1_1";
 
 describe("module.test.js", () => {
-  const container = new Container();
+  const container = new Container([ModuleCommon.tag()]);
   container.set(Application);
 
   beforeEach(async function () {
-    await container.ready([ModuleCommon.tag()]);
+    await container.ready();
   });
 
   it("should echo success", () => {
@@ -56,13 +56,13 @@ describe("module.test.js", () => {
     assert.deepEqual(containerMod1Foo.get("context2"), context);
   });
 
-  it("[1/2] should dump uml success", async () => {
+  it("[1/2] should dump mermaid success", async () => {
     const dump = await container.dump();
     assert(dump.root);
     assert(dump.relations.length > 0);
   });
 
-  it("[2/2] should dump uml success", async () => {
+  it("[2/2] should dump mermaid success", async () => {
     const tmp = path.join(__dirname, "fixtures/modules");
     const mmdFile = path.join(tmp, "__module__.mmd");
     const svgFile = path.join(tmp, "__module__.svg");
@@ -92,7 +92,7 @@ describe("module.test.js", () => {
     try {
       const { InjectPrivate } = await import("./fixtures/modules/apps/inject_private");
       container.set(InjectPrivate);
-      await container.ready([ModuleCommon.tag()]);
+      await container.ready();
       const app = container.get(InjectPrivate);
       app.msg();
     } catch (err) {

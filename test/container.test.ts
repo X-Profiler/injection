@@ -1,5 +1,5 @@
 import { strict as assert } from "assert";
-import { Container, ErrorType } from "../src";
+import { Container, DEFAULT_CONTAINER_TAG, ErrorType, Store, TRUE_CONTAINER } from "../src";
 import { createCustomError } from "../src/utils";
 import { UnInjectable, Foo, Bar } from "./fixtures/items/container";
 import { Config, Config2, TransientConfig } from "./fixtures/items/config";
@@ -74,6 +74,44 @@ describe("container.test.js", () => {
         error = err;
       }
       assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
+    });
+
+    it("should throw set nonexistent fake item", () => {
+      const id = 'fake';
+      const tag = "fake";
+      const container = Store.containers.get(DEFAULT_CONTAINER_TAG) as Container;
+      Store.containers.set(tag, new Container([], tag, false));
+      let error = createCustomError();
+      try {
+        container.set({ id, value: { [TRUE_CONTAINER]: tag } });
+        container.get(tag);
+      } catch (err) {
+        error = err;
+      }
+      Store.containers.delete(tag);
+      assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
+    });
+
+    it("should not throw set fake item", () => {
+      const id = "item";
+      const tag1 = "child1";
+      const tag2 = "child2";
+      const container = Store.containers.get(DEFAULT_CONTAINER_TAG) as Container;
+      Store.containers.set(tag1, new Container([], tag1, false));
+      Store.containers.set(tag2, new Container([], tag2, false));
+      let error = createCustomError();
+      try {
+        container.set({ id, value: { [TRUE_CONTAINER]: tag1 } });
+        (Store.containers.get(tag1) as Container).set({ id, value: { [TRUE_CONTAINER]: tag2 } });
+        (Store.containers.get(tag2) as Container).set({ id, value: "item" });
+        const item = container.get(id);
+        assert(item === "item");
+      } catch (err) {
+        error = err;
+      }
+      Store.containers.delete(tag1);
+      Store.containers.delete(tag2);
+      assert(error.code === ErrorType.EMPTY_INITIALIZED);
     });
   });
 

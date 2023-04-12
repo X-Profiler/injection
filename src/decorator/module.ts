@@ -10,5 +10,9 @@ export function DefineModule() {
       return BaseModule.module(parent);
     });
     BaseModule.modules.set(target, BaseModule.create(modulePath, parents));
+
+    if(Reflect.getPrototypeOf(target) !== BaseModule){
+      Reflect.setPrototypeOf(target, BaseModule);
+    }
   };
 }
