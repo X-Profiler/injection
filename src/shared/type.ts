@@ -1,4 +1,4 @@
-import { ScopeType, PropType, ErrorType, ErrorMessage } from "./constant";
+import { ScopeType, PropType, ErrorType, ErrorMessage, ModuleRelationType } from "./constant";
 
 export type ConstructableT<T = unknown> = new (...args: any[]) => T;
 
@@ -49,7 +49,8 @@ export interface RecordClassMemberMetadataT {
   list: ClassMemberMetadataT[],
 }
 
-export interface ModuleRelationType {
+export interface RelationType {
+  type: (typeof ModuleRelationType)[keyof (typeof ModuleRelationType)],
   desc: string,
 }
 

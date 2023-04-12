@@ -1,8 +1,8 @@
-import { DefineModule } from "../../../../../src";
+import { BaseModule, DefineModule } from "../../../../../src";
 import { Module1 } from "../";
 
 @DefineModule()
-export class Module1_1 {
+export class Module1_1 extends BaseModule {
   static get parents() {
     return [Module1];
   }

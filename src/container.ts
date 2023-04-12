@@ -4,7 +4,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { Injectable } from "./decorator/injectable";
 import {
-  PropType, ErrorType, ScopeType,
+  PropType, ErrorType, ScopeType, ModuleRelationType,
   CLASS_CONSTRUCTOR_METADATA_KEY, CLASS_PROPS_KEY, CLASS_PROP_METADATA_PREFIX, DEFAULT_CONTAINER_TAG, TRUE_CONTAINER,
 } from "./shared/constant";
 import { Store } from "./shared/store";
@@ -58,13 +58,18 @@ export class Container {
 
       if (options.export) {
         const container = this.scontainer(this.tag);
-        const parents = BaseModule.parentship.get(container.tag) || [DEFAULT_CONTAINER_TAG];
+        const parents = BaseModule.parentship.get(container.tag) || [];
         for (const parent of parents) {
           const pcontainer = this.scontainer(parent);
-          if (pcontainer.tag === container.tag) {
-            continue;
+          pcontainer.duplicate(options.id, { [TRUE_CONTAINER]: container.tag });
+        }
+        const children = BaseModule.childship.get(container.tag) || [];
+        for (const child of children) {
+          const ccontainer = this.scontainer(child);
+          const info = BaseModule.relationtype.get(BaseModule.compose(container.tag, child));
+          if (info?.type === ModuleRelationType.SUBMODULE_BINDING) {
+            ccontainer.duplicate(options.id, { [TRUE_CONTAINER]: container.tag });
           }
-          pcontainer.set({ id: options.id, value: { [TRUE_CONTAINER]: container.tag } });
         }
       }
 
@@ -102,11 +107,13 @@ export class Container {
       if (this.tag !== DEFAULT_CONTAINER_TAG) {
         return this.scontainer(DEFAULT_CONTAINER_TAG).get(id, [...trace, this.tag]);
       }
+      trace.push(this.tag);
       throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${trace.join(" => ")}> [${toString(id)}] ${str}`);
     }
 
     if (is.includes(value, TRUE_CONTAINER)) {
       if (trace.includes(this.tag)) {
+        trace.push(this.tag);
         throw createCustomError(ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND, str => `container: <${trace.join(" => ")} (loop: ${this.tag})> [${toString(id)}] ${str}`);
       }
       return this.scontainer(value[TRUE_CONTAINER]).get(id, [...trace, this.tag]);
@@ -192,46 +199,14 @@ export class Container {
     return container;
   }
 
-  private addCommon() {
-    for (const mod of BaseModule.tags()) {
-      this.commons.forEach(common => {
-        if (mod === common) {
-          return;
-        }
-        BaseModule.ship(mod, common, BaseModule.childship, {
-          key: BaseModule.compose(mod, common),
-          value: { desc: "全局公共模块" },
-        });
-        BaseModule.ship(common, mod, BaseModule.parentship);
-      });
-    }
-  }
-
   public async ready() {
     this.filling();
-    for (const parent of BaseModule.childship.keys()) {
-      const children = BaseModule.childship.get(parent) as string[];
-      const container = this.scontainer(parent);
-      this.addCommon();
-
-      for (const child of children) {
-        try {
-          for (const clazz of (Object.values(await import(child)))) {
-            if (!is.class(clazz)) {
-              continue;
-            }
-            const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz as ConstructableT) as ClassConstructorMetadataT;
-            if (!metadata) {
-              continue;
-            }
-
-            container.set({ id: metadata.id, value: { [TRUE_CONTAINER]: child } });
-          }
-        } catch (err) {
-          throw createCustomError(ErrorType.MODULE_INDEX_NOT_FOUND, str => `mod: ${child} ${str}\n\nextra: ${err}`);
-        }
-      }
-    }
+    this.addCommon();
+    await this.addFakeItmes(BaseModule.childship);
+    await this.addFakeItmes(BaseModule.parentship, (k, v) => {
+      const info = BaseModule.relationtype.get(BaseModule.compose(v, k));
+      return info ? info.type === ModuleRelationType.SUBMODULE_BINDING : true;
+    });
   }
 
   public async dump(output?: string) {
@@ -356,5 +331,51 @@ export class Container {
       }
     }
     return firstStr;
+  }
+
+  private addCommon() {
+    for (const mod of BaseModule.tags()) {
+      this.commons.forEach(common => {
+        if (mod === common) {
+          return;
+        }
+        BaseModule.ship(mod, common, BaseModule.childship, {
+          key: BaseModule.compose(mod, common),
+          value: { desc: "全局公共模块", type: ModuleRelationType.GLOBAL_COMMON_BINDING },
+        });
+        BaseModule.ship(common, mod, BaseModule.parentship);
+      });
+    }
+  }
+
+  private async addFakeItmes(
+    map: Map<string, string[]>,
+    check: (key: string, value: string) => boolean = () => true,
+  ) {
+    for (const key of map.keys()) {
+      const children = map.get(key) as string[];
+      const container = this.scontainer(key);
+
+      for (const child of children) {
+        if (!check(key, child) || this.scontainer(child).tag === DEFAULT_CONTAINER_TAG) {
+          continue;
+        }
+        try {
+          for (const clazz of (Object.values(await import(child)))) {
+            if (!is.class(clazz)) {
+              continue;
+            }
+            const metadata = Reflect.getOwnMetadata(CLASS_CONSTRUCTOR_METADATA_KEY, clazz as ConstructableT) as ClassConstructorMetadataT;
+            if (!metadata) {
+              continue;
+            }
+
+            container.set({ id: metadata.id, value: { [TRUE_CONTAINER]: child } });
+          }
+        } catch (err) {
+          throw createCustomError(ErrorType.MODULE_INDEX_NOT_FOUND, str => `mod: ${child} ${str}\n\nextra: ${err}`);
+        }
+      }
+    }
   }
 }

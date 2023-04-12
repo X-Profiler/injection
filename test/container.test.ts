@@ -76,8 +76,8 @@ describe("container.test.js", () => {
       assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
     });
 
-    it("should throw set nonexistent fake item", () => {
-      const id = 'fake';
+    it("[1/2] should throw set nonexistent fake item", () => {
+      const id = "fake";
       const tag = "fake";
       const container = Store.containers.get(DEFAULT_CONTAINER_TAG) as Container;
       Store.containers.set(tag, new Container([], tag, false));
@@ -92,7 +92,7 @@ describe("container.test.js", () => {
       assert(error.code === ErrorType.CONTAINER_GET_FAILED_BY_NOT_FOUND);
     });
 
-    it("should not throw set fake item", () => {
+    it("[2/2] should not throw set fake item", () => {
       const id = "item";
       const tag1 = "child1";
       const tag2 = "child2";

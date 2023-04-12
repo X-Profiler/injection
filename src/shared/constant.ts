@@ -47,3 +47,8 @@ export const ErrorMessage = {
   [ErrorType.MODULE_CIRCULAR_DEPENDENCY]: "circular dependency found!",
   [ErrorType.MODULE_DECLARED_PARENTS]: "module already declare parents!",
 } as const;
+
+export const ModuleRelationType = {
+  SUBMODULE_BINDING: `${PREFIX}::SUBMODULE_BINDING`,
+  GLOBAL_COMMON_BINDING: `${PREFIX}::GLOBAL_COMMON_BINDING`,
+} as const;

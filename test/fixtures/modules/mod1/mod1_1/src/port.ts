@@ -5,4 +5,8 @@ export class Module1_1Public {
   public echo() {
     return "from class Module1_1Private";
   }
+
+  public tag() {
+    return "Module1_1Public";
+  }
 }

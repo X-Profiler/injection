@@ -8,6 +8,7 @@ import { ModuleCommon, Message } from "./fixtures/modules/common";
 import { Unused } from "./fixtures/modules/mod1/chore";
 import { Module1Foo } from "./fixtures/modules/mod1";
 import { Module1_1Public } from "./fixtures/modules/mod1/mod1_1";
+import { Module1_2Public } from "./fixtures/modules/mod1/mod1_2";
 
 describe("module.test.js", () => {
   const container = new Container([ModuleCommon.tag()]);
@@ -17,7 +18,7 @@ describe("module.test.js", () => {
     await container.ready();
   });
 
-  it("should echo success", () => {
+  it("[1/2] should echo success", () => {
     const app = container.get(Application);
     const msg = app.msg();
     assert(msg.includes("from class Module1Foo"));
@@ -25,6 +26,14 @@ describe("module.test.js", () => {
     assert(msg.includes("echo from Message"));
     assert(msg.includes("echo from Logger"));
     assert(msg.includes("from class Module1_1Private"));
+  });
+
+  it("[2/2] should echo success", async () => {
+    const app = container.get(Application);
+    const msg = app.msg2();
+    assert(msg.includes("from class Module1Bar"));
+    assert(msg.includes("from class Module1_2Public"));
+    assert(msg.includes("use Module1_1Public"));
   });
 
   it("should choose correct module", async () => {
@@ -38,7 +47,7 @@ describe("module.test.js", () => {
     assert(containerUnusedA.tag === DEFAULT_CONTAINER_TAG);
   });
 
-  it("[1/2] should ok when set export: true", async () => {
+  it("[1/3] should ok when set export: true", async () => {
     const containerMod1Foo = container.choose(Module1Foo);
     assert(containerMod1Foo.tag === path.join(__dirname, "fixtures/modules/mod1"));
     const context = { req: { date: Date.now() + "::" + Math.random().toString(16).slice(2) } };
@@ -47,13 +56,22 @@ describe("module.test.js", () => {
     assert.deepEqual(containerApp.get("context1"), context);
   });
 
-  it("[2/2] should ok when set export: true", async () => {
+  it("[2/3] should ok when set export: true", async () => {
     const containerMod1_1Public = container.choose(Module1_1Public);
     assert(containerMod1_1Public.tag === path.join(__dirname, "fixtures/modules/mod1/mod1_1"));
     const context = { req: { date: Date.now() + "::" + Math.random().toString(16).slice(2) } };
     containerMod1_1Public.set({ id: "context2", value: context, export: true });
     const containerMod1Foo = container.choose(Module1Foo);
     assert.deepEqual(containerMod1Foo.get("context2"), context);
+  });
+
+  it("[3/3] should ok when set export: true", async () => {
+    const containerMod1_2Public = container.choose(Module1_2Public);
+    assert(containerMod1_2Public.tag === path.join(__dirname, "fixtures/modules/mod1/mod1_2"));
+    const context = { req: { date: Date.now() + "::" + Math.random().toString(16).slice(2) } };
+    const containerMod1_1Public = container.choose(Module1_1Public);
+    containerMod1_1Public.set({ id: "context3", value: context, export: true });
+    assert.deepEqual(containerMod1_2Public.get("context3"), context);
   });
 
   it("[1/2] should dump mermaid success", async () => {
@@ -85,7 +103,7 @@ describe("module.test.js", () => {
     } catch (err) {
       err;
     }
-  });
+  }, 60 * 1000);
 
   it("should throw error when inject module private class", async () => {
     let error = createCustomError();

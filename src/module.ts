@@ -1,6 +1,6 @@
 import path from "path";
 import { ErrorType } from "./shared/constant";
-import { ModuleRelationType } from "./shared/type";
+import { RelationType } from "./shared/type";
 import { createCustomError } from "./utils/error";
 import { toString } from "./utils/helper";
 import { getCalleeFromStack } from "./utils/stack";
@@ -19,7 +19,7 @@ export class BaseModule {
   static modules: Map<typeof BaseModule, Module> = new Map<typeof BaseModule, Module>();
   static childship: Map<string, string[]> = new Map<string, string[]>();
   static parentship: Map<string, string[]> = new Map<string, string[]>();
-  static relationtype: Map<string, ModuleRelationType> = new Map<string, ModuleRelationType>();
+  static relationtype: Map<string, RelationType> = new Map<string, RelationType>();
 
   static get parents(): BaseModule[] {
     return [];
@@ -47,8 +47,9 @@ export class BaseModule {
 
   static ship(
     key: string,
-    value: string, ship: Map<string, string[]>,
-    options?: { key: string, value: ModuleRelationType },
+    value: string,
+    ship: Map<string, string[]>,
+    options?: { key: string, value: RelationType },
   ) {
     const list: string[] = ship.get(key) || [];
     value && !list.includes(value) && list.push(value);
@@ -61,7 +62,7 @@ export class BaseModule {
   static register(
     parent = true,
     registedTag?: string,
-    type?: ModuleRelationType,
+    type?: RelationType,
   ) {
     // get parent and child tag
     registedTag ??= path.dirname(getCalleeFromStack(2));
